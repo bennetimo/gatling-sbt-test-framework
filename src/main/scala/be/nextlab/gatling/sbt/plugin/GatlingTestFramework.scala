@@ -1,12 +1,5 @@
 package be.nextlab.gatling.sbt.plugin
 
-//implement https://github.com/harrah/test-interface
-//in order to discover Simulation as tests
-//Fingerprint can be based on the fact that tests must extends
-//  com.excilys.ebi.gatling.core.scenario.configuration.Simulation.
-//implement Runner 2 to lauch test 
-//mimic https://github.com/etorreborre/specs2/blob/1.11/src/main/scala/org/specs2/runner/TestInterfaceRunner.scala
-
 import org.scalatools.testing._
 
 import com.excilys.ebi.gatling.charts.report.ReportsGenerator
@@ -14,18 +7,13 @@ import com.excilys.ebi.gatling.charts.config.ChartsFiles._
 import com.excilys.ebi.gatling.core.result.message.RunRecord
 import org.joda.time.DateTime._
 import com.excilys.ebi.gatling.core.runner.Runner
-//import com.excilys.ebi.gatling.core.scenario.configuration.Simulation
-//import com.excilys.ebi.gatling.core.scenario.configuration._
 
 import com.excilys.ebi.gatling.core.Predef._
 
 import GatlingFingerprints._
 
 class GatlingFramework extends Framework {
-	println("===========>Configuration from the system properties<===========")
-	println(sys.props.get("sbt.gatling.conf.file").get)
-	println(sys.props.get("sbt.gatling.result.dir").get)
-
+	
 	GatlingBootstrap(
 		sys.props.get("sbt.gatling.conf.file").get, 
 		sys.props.get("sbt.gatling.result.dir").get
@@ -39,7 +27,7 @@ class GatlingFramework extends Framework {
 }
 
 trait GatlingSimulationFingerprint extends TestFingerprint {
-  def superClassName = "com.excilys.ebi.gatling.core.scenario.configuration.Simulation"
+  def superClassName = "be.nextlab.gatling.sbt.plugin.Simulation"
 }
 
 object GatlingFingerprints {
@@ -67,18 +55,8 @@ class TestInterfaceGatling(loader: ClassLoader, val loggers: Array[Logger]) exte
       		//todo case x                                       => 
     	}
 
-    def runSimulation(className:String,  handler: EventHandler, args: Array[String]) {
-
-    	println("className :: " + className)
-    	println("handler :: " + handler)
-    	println("args :: " + "\n\t"+args.mkString("\n\t"))
-    	println("--------------------------")
-
-    	val s = createInstanceFor[Simulation](loadClassOf(className, loader))
-
-    	gatling(s)
-
-    }
+    def runSimulation(className:String,  handler: EventHandler, args: Array[String]) = 
+    	gatling(createInstanceFor[Simulation](loadClassOf(className, loader)))
 
 
 
@@ -104,8 +82,12 @@ class TestInterfaceGatling(loader: ClassLoader, val loggers: Array[Logger]) exte
       val runInfo = new RunRecord(now, "run-test", "stress-test")
       println("Run record created > run scenario")
 
+      s.pre
+
       val configurations = s()
       new Runner(runInfo, configurations).run
+
+      s.post
 
       println("Simulation Finished.")
       runInfo.runUuid
@@ -120,13 +102,6 @@ class TestInterfaceGatling(loader: ClassLoader, val loggers: Array[Logger]) exte
       val start = System.currentTimeMillis
       ReportsGenerator.generateFor(runUuid)
       println("Reports generated in " + (System.currentTimeMillis - start) / 1000 + "s.")
-
-      // if (ReportsGenerator.generateFor(runUuid)) {
-      //   println("Reports generated in " + (System.currentTimeMillis - start) / 1000 + "s.")
-      //   //todo println("Please open the following file : " + activeSessionsFile(runUuid))
-      // } else {
-      //   println("Reports weren't generated")
-      // }
     }
 
 }
