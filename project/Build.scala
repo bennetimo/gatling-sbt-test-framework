@@ -10,9 +10,6 @@ object GatlingBuild extends Build {
 	val gatlingReleasesRepo = "Gatling Releases Repo" at "http://repository.excilys.com/content/repositories/releases"
 	val gatling3PartyRepo = "Gatling Third-Party Repo" at "http://repository.excilys.com/content/repositories/thirdparty"
 
-    /* LOCAL MAVEN REPO */
-    val localMavenRepo = "Local Maven Repository" at file(Path.userHome.absolutePath+"/.m2/repository").toURI.toURL.toString
-
 	/* GATLING DEPS */
 	val gatlingVersionNumber = "1.2.5"
 	val gatlingApp = "com.excilys.ebi.gatling" % "gatling-app" % gatlingVersionNumber //withSources
@@ -39,7 +36,7 @@ object GatlingBuild extends Build {
 
 	    libraryDependencies ++= libDependencies,
 
-        resolvers ++= Seq(gatlingReleasesRepo, gatling3PartyRepo, localMavenRepo)
+        resolvers ++= Seq(gatlingReleasesRepo, gatling3PartyRepo)
     )
 
    
