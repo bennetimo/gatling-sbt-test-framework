@@ -55,53 +55,53 @@ class TestInterfaceGatling(loader: ClassLoader, val loggers: Array[Logger]) exte
       		//todo case x                                       => 
     	}
 
-    def runSimulation(className:String,  handler: EventHandler, args: Array[String]) = 
-    	gatling(createInstanceFor[Simulation](loadClassOf(className, loader)))
+  def runSimulation(className:String,  handler: EventHandler, args: Array[String]) = 
+  	gatling(createInstanceFor[Simulation](loadClassOf(className, loader)))
 
 
 
-    private def createInstanceFor[T <: AnyRef](klass: Class[T])(implicit m: ClassManifest[T]) = {
-        val constructor = klass.getDeclaredConstructors()(0)
-        constructor.setAccessible(true)
-        try {
-            val instance: AnyRef = constructor.newInstance().asInstanceOf[AnyRef]
-            if (!m.erasure.isInstance(instance)) {
-            	error(instance + " is not an instance of " + m.erasure.getName)
-            }
-            instance.asInstanceOf[T]
-        } catch {
-            case e: java.lang.reflect.InvocationTargetException => throw e
-        }
-    }
-    
-    private def loadClassOf[T <: AnyRef](className: String = "", loader: ClassLoader = Thread.currentThread.getContextClassLoader): Class[T] = 
-        loader.loadClass(className).asInstanceOf[Class[T]]
+  private def createInstanceFor[T <: AnyRef](klass: Class[T])(implicit m: ClassManifest[T]) = {
+      val constructor = klass.getDeclaredConstructors()(0)
+      constructor.setAccessible(true)
+      try {
+          val instance: AnyRef = constructor.newInstance().asInstanceOf[AnyRef]
+          if (!m.erasure.isInstance(instance)) {
+          	error(instance + " is not an instance of " + m.erasure.getName)
+          }
+          instance.asInstanceOf[T]
+      } catch {
+          case e: java.lang.reflect.InvocationTargetException => throw e
+      }
+  }
+  
+  private def loadClassOf[T <: AnyRef](className: String = "", loader: ClassLoader = Thread.currentThread.getContextClassLoader): Class[T] = 
+      loader.loadClass(className).asInstanceOf[Class[T]]
 
-    def gatling(s: Simulation) {
-      println("Creating run record")
-      val runInfo = new RunRecord(now, "run-test", "stress-test")
-      println("Run record created > run scenario")
+  def gatling(s: Simulation) {
+    println("Creating run record")
+    val runInfo = new RunRecord(now, "run-test", "stress-test")
+    println("Run record created > run scenario")
 
-      s.pre
+    s.pre
 
-      val configurations = s()
-      new Runner(runInfo, configurations).run
+    val configurations = s()
+    new Runner(runInfo, configurations).run
 
-      s.post
+    s.post
 
-      println("Simulation Finished.")
-      runInfo.runUuid
+    println("Simulation Finished.")
+    runInfo.runUuid
 
-      println("scenarion ran > generate reports")
-      generateReports(runInfo.runUuid)
-      println("reports generated")
-    }
+    println("scenarion ran > generate reports")
+    generateReports(runInfo.runUuid)
+    println("reports generated")
+  }
 
-    def generateReports(runUuid: String) {
-      println("Generating reports...")
-      val start = System.currentTimeMillis
-      ReportsGenerator.generateFor(runUuid)
-      println("Reports generated in " + (System.currentTimeMillis - start) / 1000 + "s.")
-    }
+  def generateReports(runUuid: String) {
+    println("Generating reports...")
+    val start = System.currentTimeMillis
+    ReportsGenerator.generateFor(runUuid)
+    println("Reports generated in " + (System.currentTimeMillis - start) / 1000 + "s.")
+  }
 
 }
